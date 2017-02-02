@@ -71,11 +71,11 @@ class MainHandler(webapp2.RequestHandler):
         password = valid_password(user_password, user_verify_password)
         email = valid_email(user_email)
 
-        if (username and password and user_email):
-            self.response.write("It's Working!")
+        if not (username and password and user_email):
+            self.response.write("Incorrect")
 
         else:
-            self.response.write("Incorrect")
+            self.response.write("It's Working!")
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
