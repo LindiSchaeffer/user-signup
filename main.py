@@ -15,11 +15,11 @@
 # limitations under the License.
 #
 import webapp2
+import re
 
 form = """
 <form method="post">
     <h1>Signup</h1>
-    <br>
     <label>
         Username
         <input type="text" name="username">
@@ -31,12 +31,12 @@ form = """
     </label>
     <br>
     <label>
-        Confirm Password
-        <input type"password" name="password">
+        Verify Password
+        <input type"password" name="verify_password">
     </label>
     <br>
     <label>
-        Email Address
+        Email Address (optional)
         <input type"text" name="email">
     </label>
     <br>
@@ -44,12 +44,38 @@ form = """
 </form>
 """
 
+USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+def valid_username(user_name):
+    return USER_RE.match(user_name)
+
+PASS_RE = re.compile(r"^.{3,20}$")
+def valid_password(user_password, user_verify_password):
+    if user_password == user_verify_password:
+        return PASS_RE.match(user_password)
+
+EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
+def valid_email(user_email):
+    return PASS_RE.match(user_email)
+
 class MainHandler(webapp2.RequestHandler):
     def get(self):
         self.response.write(form)
 
     def post(self):
-        self.response.write("Hello World")
+        user_name = self.request.get('username')
+        user_password = self.request.get('password')
+        user_verify_password = self.request.get('verify_password')
+        user_email = self.request.get('email')
+
+        username = valid_username(user_name)
+        password = valid_password(user_password, user_verify_password)
+        email = valid_email(user_email)
+
+        if (username and password and user_email):
+            self.response.write("It's Working!")
+
+        else:
+            self.response.write("Incorrect")
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
