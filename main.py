@@ -37,6 +37,7 @@ form = """
             </td>
             <td>
                 <input type="password" name="password">
+                <span style="color:red">%(error4)s</span>
             </td>
         </tr>
         <tr>
@@ -66,8 +67,11 @@ def valid_username(user_name):
 
 PASS_RE = re.compile(r"^.{3,20}$")
 def valid_password(user_password, user_verify_password):
-    if user_password == user_verify_password:
-        return PASS_RE.match(user_password)
+    if user_password:
+        if user_password == user_verify_password:
+            return PASS_RE.match(user_password)
+    else:
+        return True
 
 EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
 def valid_email(user_email):
@@ -76,18 +80,23 @@ def valid_email(user_email):
     else:
         return True
 
+def valid_password_input(user_password):
+    if user_password:
+        return True
+
 class MainHandler(webapp2.RequestHandler):
 
-    def write_form(self, error1, error2, error3, username, password, email):
+    def write_form(self, error1, error2, error3, error4, username, password, email):
         self.response.write(form % {"error1": error1,
                                     "error2": error2,
                                     "error3": error3,
+                                    "error4": error4,
                                     "username": username,
                                     "password": password,
                                     "email": email})
 
     def get(self):
-        self.write_form('', '', '', '', '', '')
+        self.write_form('', '', '', '', '', '', '')
 
     def post(self):
         user_name = self.request.get('username')
@@ -98,16 +107,19 @@ class MainHandler(webapp2.RequestHandler):
         username = valid_username(user_name)
         password = valid_password(user_password, user_verify_password)
         email = valid_email(user_email)
+        password_input = valid_password_input(user_password)
 
-        if not (username and password and email):
+        if not (username and password and email and password_input):
 
-            error_1, error_2, error_3 = "That's not a valid username." if not username else '', \
+            error_1, error_2, error_3, error_4 = "That's not a valid username." if not username else '', \
                                         "Your passwords didn't match." if not password else '', \
-                                        "That is not a valid email address." if not email else ''
+                                        "That is not a valid email address." if not email else '', \
+                                        "Please enter a valid password." if not password_input else '',
 
             self.write_form(error_1,
                             error_2,
                             error_3,
+                            error_4,
                             user_name,
                             user_password,
                             user_email)
